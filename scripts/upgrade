@@ -7,19 +7,6 @@
 source _common.sh
 source /usr/share/yunohost/helpers
 
-### Settings are automatically loaded as bash variables
-### in every app script context, therefore typically these will exist:
-### - $domain
-### - $path
-### - $language
-### - $install_dir
-### - $port
-### ...
-
-### In the context of upgrade,
-### - resources are automatically provisioned / updated / deleted (depending on existing resources)
-### - a safety backup is automatically created by the core and will be restored if the upgrade fails
-
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
@@ -32,87 +19,137 @@ ynh_systemctl --service="$app" --action="stop"
 #=================================================
 ynh_script_progression "Ensuring downward compatibility..."
 
-ynh_app_setting_set_default --key=php_upload_max_filesize --value=50M
-ynh_app_setting_set_default --key=php_post_max_size --value=50M
+# If API key doesn't exist, create it
+api_key=$(ynh_app_setting_get --key=api_key)
+if [[ -z "$api_key" ]]; then
+    api_key=$(ynh_string_random 32)
+    ynh_app_setting_set --app=$app --key=api_key --value="$api_key"
+fi
 
-### N.B. : the following setting migration snippets are provided as *EXAMPLES*
-### of what you may want to do in some cases (e.g. a setting was not defined on
-### some legacy installs and you therefore want to initiaze stuff during upgrade)
+#=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression "Upgrading dependencies..."
 
-# If db_name doesn't exist, create it
-# ynh_app_setting_set_default --key=db_name --value="$(ynh_sanitize_dbid --db_name=$app)"
+# Install build dependencies for Python compilation
+ynh_install_app_dependencies "build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev"
 
-# If install_dir doesn't exist, create it
-# ynh_app_setting_set_default --key=install_dir --value="/var/www/$app"
+# Check if Python 3.13 is already installed, if not install it
+check_python
+
+# Install/upgrade UV package manager
+if ! command -v uv &>/dev/null; then
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    cp "$HOME/.cargo/bin/uv" "/usr/local/bin/uv"
+fi
+
+# Install Node.js
+nodejs_version="22"
+ynh_nodejs_install
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-### ynh_setup_source can wipe the destination dir if called with --full_replace.
-### On upgrade, that is certainly what you want, to remove any old source file that
-### does not exist in the new version of the software.
-### You can list with --keep every file/directory to *not* wipe or overwrite,
-### useful for configuration files, data directories, or plugins.
 # Download, check integrity, uncompress and patch the source from manifest.toml
-ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env data"
+ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env database logs data .venv"
 
-### $install_dir will automatically be initialized with some decent
-### permissions by default... however, you may need to recursively reapply
-### ownership to all files such as after the ynh_setup_source step
-chown -R "$app:www-data" "$install_dir"
+chown -R "$app:$app" "$install_dir"
 
 #=================================================
-# UPDATE A CONFIG FILE
+# UPGRADE PYTHON VIRTUAL ENVIRONMENT
+#=================================================
+ynh_script_progression "Upgrading Python virtual environment..."
+
+pushd "$install_dir"
+    # Upgrade virtual environment dependencies
+    source .venv/bin/activate
+    pip install --upgrade pip uv
+    
+    # Use UV to upgrade dependencies from pyproject.toml
+    uv sync --locked
+    
+    deactivate
+popd
+
+#=================================================
+# BUILD FRONTEND ASSETS
+#=================================================
+ynh_script_progression "Building frontend assets..."
+
+pushd "$install_dir"
+    # Install npm dependencies and build frontend
+    npm --prefix app/static/ install
+    npm --prefix app/static/ run build
+    
+    # Compile translations using UV
+    source .venv/bin/activate
+    uv run pybabel compile -d app/translations
+    deactivate
+popd
+
+#=================================================
+# DATABASE MIGRATION
+#=================================================
+ynh_script_progression "Running database migrations..."
+
+pushd "$install_dir"
+    source .venv/bin/activate
+    
+    # Run database migrations
+    uv run flask --app run:app db upgrade
+    
+    deactivate
+popd
+
+#=================================================
+# UPDATE CONFIG FILES
 #=================================================
 ynh_script_progression "Updating $app's configuration files..."
 
-### Same as during install
-###
-### The file will automatically be backed-up if it's found to be manually modified (because
-### ynh_config_add keeps track of the file's checksum)
+# Update gunicorn configuration
+ynh_config_add --template="gunicorn.conf.py" --destination="$install_dir/gunicorn.conf.py"
 
-ynh_config_add --template="some_config_file" --destination="$install_dir/some_config_file"
+# Update environment file for Wizarr's environment variable usage
+cat > "$install_dir/.env" << EOF
+# Application version (displayed in startup logs)
+APP_VERSION=$(ynh_read_manifest "version" | cut -d'~' -f1)
 
-# FIXME: this should be handled by the core in the future
-### You may need to use chmod 600 instead of 400,
-### for example if the app is expected to be able to modify its own config
-chmod 400 "$install_dir/some_config_file"
-chown "$app:$app" "$install_dir/some_config_file"
+# Timezone configuration
+TZ=$(timedatectl show --property=Timezone --value)
 
-### For more complex cases where you want to replace stuff using regexes,
-### you shoud rely on ynh_replace (which is basically a wrapper for sed)
-### When doing so, you also need to manually call ynh_store_file_checksum
-###
-### ynh_replace --match="match_string" --replace="replace_string" --file="$install_dir/some_config_file"
-### ynh_store_file_checksum "$install_dir/some_config_file"
+# Logging configuration
+LOG_LEVEL=INFO
+
+# Optional API key for /api/status endpoint (preserve existing or generate new)
+WIZARR_API_KEY=$api_key
+
+# Disable built-in auth if using external auth providers (Authelia, Authentik, etc)
+DISABLE_BUILTIN_AUTH=false
+EOF
+
+chown "$app:$app" "$install_dir/.env" "$install_dir/gunicorn.conf.py"
 
 #=================================================
 # REAPPLY SYSTEM CONFIGURATION
 #=================================================
 ynh_script_progression "Upgrading system configurations related to $app..."
 
-### This should be a literal copypaste of what happened in the install's "System configuration" section
-
-ynh_config_add_phpfpm
-
 ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="A short description of the app" --log="/var/log/$app/$app.log"
+yunohost service add "$app" --description="Web-based media invitation system" --log="/var/log/$app/$app.log"
 
 ynh_config_add_logrotate
-
-ynh_config_add_fail2ban --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service="$app" --action="start"
+ynh_systemctl --service="$app" --action="start" --log_path="/var/log/$app/$app.log"
 
 #=================================================
 # END OF SCRIPT
