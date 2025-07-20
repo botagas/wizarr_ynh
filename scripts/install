@@ -188,9 +188,9 @@ else
     sleep 3
     
     # Create admin account via API
-    setup_response=$(curl -s -X POST "http://127.0.0.1:$port/setup" 
-        -H "Content-Type: application/x-www-form-urlencoded" 
-        -d "username=$admin_username&password=$admin_password&confirm=$admin_password" 
+    setup_response=$(curl -s -X POST "http://127.0.0.1:$port/setup" \
+        -H "Content-Type: application/x-www-form-urlencoded" \
+        -d "username=$admin_username&password=$admin_password&confirm=$admin_password" \
         --connect-timeout 10 --max-time 30)
     
     if curl -f -s "http://127.0.0.1:$port/admin" > /dev/null 2>&1; then
