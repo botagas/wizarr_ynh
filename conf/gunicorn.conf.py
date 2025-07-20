@@ -10,5 +10,6 @@ preload_app = True
 timeout = 30
 keepalive = 2
 access_log_format = '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
-accesslog = "/var/log/__APP__/__APP__-access.log"
-errorlog = "/var/log/__APP__/__APP__-error.log"
+# Use the same log file as systemd for consistency
+accesslog = "/var/log/__APP__/__APP__.log"
+errorlog = "/var/log/__APP__/__APP__.log"
