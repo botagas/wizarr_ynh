@@ -1,1 +1,1 @@
-This is a dummy disclaimer to display prior to any upgrade
+Major changes can always break your YunoHost instance. Make sure to do proper backups of your YunoHost instance and its apps to make sure you can revert changes if needed.
