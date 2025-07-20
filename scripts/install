@@ -186,20 +186,30 @@ else
     # Wait a bit more for Wizarr to be fully initialized
     sleep 3
     
-    # Create admin account via API (note the trailing slash)
-    setup_response=$(curl -s -L -X POST "http://127.0.0.1:$port/setup/" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        -d "username=$admin_username&password=$admin_password&confirm=$admin_password" \
-        --connect-timeout 10 --max-time 30)
+    # Get CSRF token from the setup form
+    csrf_token=$(curl -s "http://127.0.0.1:$port/setup/" | grep 'csrf_token' | sed 's/.*value="\([^"]*\)".*/\1/')
     
-    if curl -f -s "http://127.0.0.1:$port/admin" > /dev/null 2>&1; then
-        ynh_print_info "Admin account created successfully!"
-        ynh_print_info "Username: $admin_username"
-        ynh_print_info "You can now log in at https://$domain$path"
+    if [ -n "$csrf_token" ]; then
+        # Create admin account via API with CSRF token
+        setup_response=$(curl -s -L -X POST "http://127.0.0.1:$port/setup/" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "csrf_token=$csrf_token&username=$admin_username&password=$admin_password&confirm=$admin_password" \
+            --connect-timeout 10 --max-time 30)
+        
+        # Check if setup was successful by looking for a redirect or success indicator
+        if echo "$setup_response" | grep -q "Setup Wizarr" && echo "$setup_response" | grep -q "form"; then
+            ynh_print_warn "Setup form still displayed - account creation may have failed"
+            ynh_print_warn "Please complete setup manually through the web interface."
+        else
+            ynh_print_info "Admin account creation completed"
+        fi
     else
-        ynh_print_warn "Automatic setup may have failed. Please complete setup manually through the web interface."
-        ynh_print_info "Username: $admin_username"
+        ynh_print_warn "Could not retrieve CSRF token for setup"
+        ynh_print_warn "Please complete setup manually through the web interface."
     fi
+    
+    ynh_print_info "Username: $admin_username"
+    ynh_print_info "You can access Wizarr at https://$domain$path"
     
     ynh_print_info "API Key for /api/status endpoint: $api_key"
 fi
