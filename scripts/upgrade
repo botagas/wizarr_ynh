@@ -124,13 +124,6 @@ WIZARR_API_KEY=$api_key
 
 # Disable built-in auth if using external auth providers (Authelia, Authentik, etc)
 DISABLE_BUILTIN_AUTH=false
-
-# Internal URL configuration to avoid SSL issues
-SERVER_NAME=127.0.0.1:$port
-PREFERRED_URL_SCHEME=http
-
-# Flask configuration for internal requests
-FLASK_ENV=production
 EOF
 
 chown "$app:$app" "$install_dir/.env" "$install_dir/gunicorn.conf.py"
