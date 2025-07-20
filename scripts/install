@@ -76,8 +76,8 @@ popd
 #=================================================
 ynh_script_progression "Building frontend assets..."
 
-# Copy YunoHost polyfill to static directory (before entering $install_dir)
-cp "../conf/yunohost-polyfill.js" "$install_dir/app/static/js/yunohost-polyfill.js"
+# Add YunoHost polyfill using ynh_config_add
+ynh_config_add --template="yunohost-polyfill.js" --destination="$install_dir/app/static/js/yunohost-polyfill.js"
 
 pushd "$install_dir"
     # Install npm dependencies and build frontend
