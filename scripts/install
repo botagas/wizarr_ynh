@@ -38,10 +38,10 @@ source /usr/share/yunohost/helpers
 # fi
 
 # Generate secret key for Flask
-secret_key=$(ynh_string_random 32)
+secret_key=$(ynh_string_random)
 
 # Generate API key for Wizarr status endpoint
-api_key=$(ynh_string_random 32)
+api_key=$(ynh_string_random)
 
 # ynh_app_setting_set --app=$app --key=password --value="$password"
 ynh_app_setting_set --app=$app --key=secret_key --value="$secret_key"

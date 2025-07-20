@@ -22,7 +22,7 @@ ynh_script_progression "Ensuring downward compatibility..."
 # If API key doesn't exist, create it
 api_key=$(ynh_app_setting_get --key=api_key)
 if [[ -z "$api_key" ]]; then
-    api_key=$(ynh_string_random 32)
+    api_key=$(ynh_string_random)
     ynh_app_setting_set --app=$app --key=api_key --value="$api_key"
 fi
 
