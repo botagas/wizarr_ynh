@@ -186,8 +186,8 @@ else
     # Wait a bit more for Wizarr to be fully initialized
     sleep 3
     
-    # Create admin account via API
-    setup_response=$(curl -s -X POST "http://127.0.0.1:$port/setup" \
+    # Create admin account via API (note the trailing slash)
+    setup_response=$(curl -s -L -X POST "http://127.0.0.1:$port/setup/" \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -d "username=$admin_username&password=$admin_password&confirm=$admin_password" \
         --connect-timeout 10 --max-time 30)
