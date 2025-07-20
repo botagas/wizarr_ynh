@@ -57,8 +57,9 @@ ram.runtime = "200M"
 
     [install.admin_username]
     type = "user"
+    ask.en = "Admin username"
     help.en = "Username for Wizarr admin account (3-15 characters)"
-    
+
     [install.admin_password]
     type = "password"
     ask.en = "Admin password"
