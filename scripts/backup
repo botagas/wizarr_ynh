@@ -17,12 +17,6 @@ ynh_print_info "Declaring files to be backed up..."
 ynh_backup "$install_dir"
 
 #=================================================
-# BACKUP THE DATA DIR
-#=================================================
-
-ynh_backup "$data_dir"
-
-#=================================================
 # BACKUP SYSTEM CONFIGURATION
 #=================================================
 
@@ -34,6 +28,8 @@ ynh_backup "/etc/systemd/system/$app.service"
 
 # Backup the logrotate configuration
 ynh_backup "/etc/logrotate.d/$app"
+ynh_backup "/var/log/$app/"
+
 
 # Backup Python installation (if it's our custom version)
 if [ -f "/usr/local/bin/python$py_vshort" ]; then
@@ -41,29 +37,6 @@ if [ -f "/usr/local/bin/python$py_vshort" ]; then
     ynh_backup "/usr/local/lib/python$py_vshort"
     ynh_backup "/etc/ld.so.conf.d/python3.13.conf"
 fi
-
-# Note: UV is managed by pipx and doesn't need backup
-
-#=================================================
-# BACKUP VARIOUS FILES
-#=================================================
-
-ynh_backup "/var/log/$app/"
-
-# Backup the Fail2Ban config
-ynh_backup "/etc/fail2ban/jail.d/$app.conf"
-ynh_backup "/etc/fail2ban/filter.d/$app.conf"
-
-#=================================================
-# BACKUP VARIOUS FILES
-#=================================================
-
-ynh_backup "/etc/cron.d/$app"
-
-ynh_backup "/etc/$app/"
-
-# NB: /var/log is not backuped during safety-backup-before-upgrades, same as $data_dir
-ynh_backup "/var/log/$app/"
 
 #=================================================
 # BACKUP THE MYSQL DATABASE

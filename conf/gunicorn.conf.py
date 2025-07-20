@@ -9,7 +9,8 @@ max_requests_jitter = 50
 preload_app = True
 timeout = 30
 keepalive = 2
-access_log_format = '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i"'
+# Use a simpler access log format to avoid Python formatting conflicts
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 # Use the same log file as systemd for consistency
 accesslog = "/var/log/__APP__/__APP__.log"
 errorlog = "/var/log/__APP__/__APP__.log"

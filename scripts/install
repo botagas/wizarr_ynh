@@ -50,7 +50,6 @@ ynh_nodejs_install
 ynh_script_progression "Setting up source files..."
 
 ynh_setup_source --dest_dir="$install_dir"
-chown -R "$app:$app" "$install_dir"
 
 #=================================================
 # CREATE PYTHON VIRTUAL ENVIRONMENT
@@ -94,11 +93,9 @@ popd
 ynh_script_progression "Creating application directories..."
 
 mkdir -p "$install_dir"/{database,logs,data}
+mkdir -p "$install_dir/database/sessions"
 mkdir -p "/var/log/$app"
 touch "/var/log/$app/$app.log"
-
-chown -R "$app:$app" "$install_dir"
-chown -R "$app:$app" "/var/log/$app"
 
 #=================================================
 # APP CONFIGURATION
@@ -125,8 +122,6 @@ WIZARR_API_KEY=$api_key
 # Disable built-in auth if using external auth providers (Authelia, Authentik, etc)
 DISABLE_BUILTIN_AUTH=false
 EOF
-
-chown "$app:$app" "$install_dir/.env" "$install_dir/gunicorn.conf.py"
 
 #=================================================
 # DATABASE INITIALIZATION
@@ -157,6 +152,10 @@ yunohost service add "$app" --description="Wizarr media server invitation system
 
 # Use logrotate to manage application logfile(s)
 ynh_config_add_logrotate
+
+# Set proper permissions after database creation
+chown -R "$app:$app" "$install_dir"
+chown -R "$app:$app" "/var/log/$app"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
