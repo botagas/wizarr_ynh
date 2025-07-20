@@ -55,10 +55,7 @@ install_python() {
         return 1
     fi
 
-    # Create symlink for easier access
-    ln -sf "/usr/local/bin/python$py_vshort" "/usr/local/bin/python3.13"
-    
-    # Update library path
+    # Update library path for shared libraries
     echo "/usr/local/lib" > /etc/ld.so.conf.d/python3.13.conf
     ldconfig
 
@@ -91,9 +88,8 @@ uninstall_python() {
 
     echo "Uninstalling Python $python_version..."
 
-    # Remove binaries
+    # Remove binaries (make altinstall creates python3.13, not python3.13.1)
     ynh_safe_rm "/usr/local/bin/python${py_vshort}"
-    ynh_safe_rm "/usr/local/bin/python3.13"
 
     # Remove libraries
     ynh_safe_rm "/usr/local/lib/python${py_vshort}"
