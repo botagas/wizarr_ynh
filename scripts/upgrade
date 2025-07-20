@@ -73,17 +73,15 @@ popd
 #=================================================
 ynh_script_progression "Building frontend assets..."
 
-# Add YunoHost polyfill using ynh_config_add
-ynh_config_add --template="yunohost-polyfill.js" --destination="$install_dir/app/static/js/yunohost-polyfill.js"
-
 pushd "$install_dir"
     # Install npm dependencies and build frontend
     npm --prefix app/static/ install
     npm --prefix app/static/ run build
     
-    # Inject YunoHost polyfill script into base template
-    sed -i 's|<script src="{{ url_for('\''static'\'', filename='\''node_modules/htmx.org/dist/htmx.min.js'\'') }}"></script>|<script src="{{ url_for('\''static'\'', filename='\''js/yunohost-polyfill.js'\'') }}"></script>\n    <script src="{{ url_for('\''static'\'', filename='\''node_modules/htmx.org/dist/htmx.min.js'\'') }}"></script>|' \
-        "app/templates/base.html"
+    # Fix internal API calls to use localhost instead of external domain
+    # This prevents SSL certificate issues with self-signed certificates
+    sed -i 's|base_url = f"{parsed.scheme}://{parsed.netloc}"|import os; base_url = os.getenv("INTERNAL_URL", f"{parsed.scheme}://{parsed.netloc}")|' \
+        "app/blueprints/admin/routes.py"
     
     # Compile translations using UV
     source .venv/bin/activate
@@ -126,6 +124,9 @@ LOG_LEVEL=INFO
 
 # Optional API key for /api/status endpoint (preserve existing or generate new)
 WIZARR_API_KEY=$api_key
+
+# YunoHost internal URL override (use localhost for internal requests to avoid SSL issues)
+INTERNAL_URL=http://127.0.0.1:$port
 
 # Disable built-in auth if using external auth providers (Authelia, Authentik, etc)
 DISABLE_BUILTIN_AUTH=false
