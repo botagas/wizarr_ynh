@@ -1,41 +1,17 @@
 #!/bin/bash
 
-#=================================================
+#============================# Generate API key for Wizarr status endpoint
+api_key=$(ynh_string_random)
+
+ynh_app_setting_set --app=$app --key=secret_key --value="$secret_key"
+ynh_app_setting_set --app=$app --key=api_key --value="$api_key"
+ynh_app_setting_set --app=$app --key=admin_username --value="$admin_username"
+ynh_app_setting_set --app=$app --key=admin_password --value="$admin_password"===============
 # IMPORT GENERIC HELPERS
 #=================================================
 
 source _common.sh
 source /usr/share/yunohost/helpers
-
-### Install parameters are automatically saved as settings
-###
-### Settings are automatically loaded as bash variables
-### in every app script context, therefore typically these will exist:
-### - $domain
-### - $path
-### - $language
-### ... etc
-###
-### Resources defined in the manifest are provisioned prior to this script
-### and corresponding settings are also available, such as:
-### - $install_dir
-### - $port
-### - $db_name
-### ...
-###
-### $app is the app id (i.e. 'example' for first install,
-### or 'example__2', '__3'... for multi-instance installs)
-
-#=================================================
-# INITIALIZE AND STORE SETTINGS
-#=================================================
-
-# Generate admin password if not provided
-# TODO: Implement automatic user creation or remove this section entirely
-# Wizarr handles user creation through its own web-based setup wizard
-# if [[ -z "$password" ]]; then
-#     password=$(ynh_string_random)
-# fi
 
 # Generate secret key for Flask
 secret_key=$(ynh_string_random)
@@ -207,25 +183,30 @@ if [ $timeout -eq 0 ]; then
     ynh_print_warn "Wizarr did not start properly. Manual setup may be required."
 else
     ynh_print_info "Wizarr is ready at https://$domain$path"
-    ynh_print_info "Complete the setup wizard manually through the web interface"
+    
+    # Attempt automatic admin account creation
+    ynh_script_progression "Creating admin account..."
+    
+    # Wait a bit more for Wizarr to be fully initialized
+    sleep 3
+    
+    # Create admin account via API
+    setup_response=$(curl -s -X POST "http://127.0.0.1:$port/setup" 
+        -H "Content-Type: application/x-www-form-urlencoded" 
+        -d "username=$admin_username&password=$admin_password&confirm=$admin_password" 
+        --connect-timeout 10 --max-time 30)
+    
+    if curl -f -s "http://127.0.0.1:$port/admin" > /dev/null 2>&1; then
+        ynh_print_info "Admin account created successfully!"
+        ynh_print_info "Username: $admin_username"
+        ynh_print_info "You can now log in at https://$domain$path"
+    else
+        ynh_print_warn "Automatic setup may have failed. Please complete setup manually through the web interface."
+        ynh_print_info "Username: $admin_username"
+    fi
+    
     ynh_print_info "API Key for /api/status endpoint: $api_key"
 fi
-
-#=================================================
-# START SYSTEMD SERVICE
-#=================================================
-ynh_script_progression "Starting $app's systemd service..."
-
-### `ynh_systemctl` is used to start a systemd service for an app.
-### Only needed if you have configure a systemd service
-### If you're not using these lines:
-###   - Remove the section "STOP SYSTEMD SERVICE" and "START SYSTEMD SERVICE" in the backup script
-###   - As well as the section "START SYSTEMD SERVICE" in the restore script
-###   - As well as the section"STOP SYSTEMD SERVICE" and "START SYSTEMD SERVICE" in the upgrade script
-###   - And the section "STOP SYSTEMD SERVICE" and "START SYSTEMD SERVICE" in the change_url script
-
-# Start a systemd service
-ynh_systemctl --service="$app" --action="start"
 
 #=================================================
 # END OF SCRIPT

@@ -55,6 +55,17 @@ ram.runtime = "200M"
     type = "group"
     default = "visitors"
 
+    [install.admin_username]
+    type = "string"
+    ask.en = "Admin username"
+    help.en = "Username for Wizarr admin account (3-15 characters)"
+    default = "admin"
+
+    [install.admin_password]
+    type = "password"
+    ask.en = "Admin password"
+    help.en = "Password must be at least 8 characters with uppercase, lowercase, and number"
+
 [resources]
     # See the packaging documentation for the full set
     # of explanation regarding the behavior and properties for each of those
