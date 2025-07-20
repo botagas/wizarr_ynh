@@ -31,9 +31,11 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 # Generate admin password if not provided
-if [[ -z "$password" ]]; then
-    password=$(ynh_string_random)
-fi
+# TODO: Implement automatic user creation or remove this section entirely
+# Wizarr handles user creation through its own web-based setup wizard
+# if [[ -z "$password" ]]; then
+#     password=$(ynh_string_random)
+# fi
 
 # Generate secret key for Flask
 secret_key=$(ynh_string_random 32)
@@ -41,7 +43,7 @@ secret_key=$(ynh_string_random 32)
 # Generate API key for Wizarr status endpoint
 api_key=$(ynh_string_random 32)
 
-ynh_app_setting_set --app=$app --key=password --value="$password"
+# ynh_app_setting_set --app=$app --key=password --value="$password"
 ynh_app_setting_set --app=$app --key=secret_key --value="$secret_key"
 ynh_app_setting_set --app=$app --key=api_key --value="$api_key"
 
@@ -209,8 +211,7 @@ if [ $timeout -eq 0 ]; then
 else
     ynh_print_info "Wizarr is ready at https://$domain$path"
     ynh_print_info "Complete the setup wizard manually through the web interface"
-    ynh_print_info "Suggested admin username: $admin"
-    ynh_print_info "Suggested admin password: $password"
+    ynh_print_info "API Key for /api/status endpoint: $api_key"
 fi
 
 #=================================================
