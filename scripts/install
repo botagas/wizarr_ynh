@@ -52,9 +52,6 @@ ynh_app_setting_set --app=$app --key=api_key --value="$api_key"
 #=================================================
 ynh_script_progression "Installing Python 3.13..."
 
-# Install build dependencies for Python compilation
-ynh_install_app_dependencies "build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev"
-
 # Check if Python 3.13 is already installed, if not install it
 check_python
 

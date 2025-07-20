@@ -13,9 +13,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Reinstalling dependencies..."
 
-# Install build dependencies for Python compilation
-ynh_install_app_dependencies "build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev wget libbz2-dev"
-
 # Install Node.js
 nodejs_version="22"
 ynh_nodejs_install
