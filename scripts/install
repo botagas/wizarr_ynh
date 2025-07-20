@@ -76,10 +76,17 @@ popd
 #=================================================
 ynh_script_progression "Building frontend assets..."
 
+# Copy YunoHost polyfill to static directory (before entering $install_dir)
+cp "../conf/yunohost-polyfill.js" "$install_dir/app/static/js/yunohost-polyfill.js"
+
 pushd "$install_dir"
     # Install npm dependencies and build frontend
     npm --prefix app/static/ install
     npm --prefix app/static/ run build
+    
+    # Inject YunoHost polyfill script into base template
+    sed -i 's|<script src="{{ url_for('\''static'\'', filename='\''node_modules/htmx.org/dist/htmx.min.js'\'') }}"></script>|<script src="{{ url_for('\''static'\'', filename='\''js/yunohost-polyfill.js'\'') }}"></script>\n    <script src="{{ url_for('\''static'\'', filename='\''node_modules/htmx.org/dist/htmx.min.js'\'') }}"></script>|' \
+        "app/templates/base.html"
     
     # Compile translations using UV
     source .venv/bin/activate
