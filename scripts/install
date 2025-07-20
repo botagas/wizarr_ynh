@@ -186,23 +186,65 @@ else
     # Wait a bit more for Wizarr to be fully initialized
     sleep 3
     
-    # Get CSRF token from the setup form
-    csrf_token=$(curl -s "http://127.0.0.1:$port/setup/" | grep 'csrf_token' | sed 's/.*value="\([^"]*\)".*/\1/')
+    # Create a temporary cookie jar for session management
+    cookie_jar="/tmp/wizarr_cookies.txt"
+    
+    # First, get the setup form and extract CSRF token while maintaining session
+    setup_page=$(curl -s -c "$cookie_jar" "http://127.0.0.1:$port/setup/")
+    csrf_token=$(echo "$setup_page" | grep 'csrf_token' | sed 's/.*value="\([^"]*\)".*/\1/')
     
     if [ -n "$csrf_token" ]; then
-        # Create admin account via API with CSRF token
-        setup_response=$(curl -s -L -X POST "http://127.0.0.1:$port/setup/" \
+        ynh_print_info "CSRF token retrieved: ${csrf_token:0:20}..."
+        
+        # Submit the form with session cookies
+        setup_response=$(curl -s -b "$cookie_jar" -c "$cookie_jar" \
+            -X POST "http://127.0.0.1:$port/setup/" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "csrf_token=$csrf_token&username=$admin_username&password=$admin_password&confirm=$admin_password" \
             --connect-timeout 10 --max-time 30)
         
-        # Check if setup was successful by looking for a redirect or success indicator
-        if echo "$setup_response" | grep -q "Setup Wizarr" && echo "$setup_response" | grep -q "form"; then
-            ynh_print_warn "Setup form still displayed - account creation may have failed"
+        ynh_print_info "Form submitted, checking response..."
+        
+        # Check if there are validation errors in the response
+        if echo "$setup_response" | grep -q "text-red-600\|text-red-500"; then
+            ynh_print_warn "Form validation errors detected:"
+            echo "$setup_response" | grep -A1 -B1 "text-red-600\|text-red-500" | sed 's/<[^>]*>//g' | grep -v "^--$" | while read line; do
+                if [ -n "$line" ]; then
+                    ynh_print_warn "  $line"
+                fi
+            done
+        elif echo "$setup_response" | grep -q "Setup Wizarr.*form"; then
+            ynh_print_warn "Setup form is still displayed - checking for other issues..."
+            
+            # Check if password meets requirements
+            if ! echo "$admin_password" | grep -q '[A-Z]'; then
+                ynh_print_warn "Password missing uppercase letter"
+            fi
+            if ! echo "$admin_password" | grep -q '[a-z]'; then
+                ynh_print_warn "Password missing lowercase letter"
+            fi
+            if ! echo "$admin_password" | grep -q '[0-9]'; then
+                ynh_print_warn "Password missing number"
+            fi
+            if [ ${#admin_password} -lt 8 ]; then
+                ynh_print_warn "Password too short (less than 8 characters)"
+            fi
+            
             ynh_print_warn "Please complete setup manually through the web interface."
         else
-            ynh_print_info "Admin account creation completed"
+            ynh_print_info "Admin account creation appears successful!"
+            
+            # Try to access the admin page to verify
+            admin_response=$(curl -s -b "$cookie_jar" "http://127.0.0.1:$port/admin")
+            if echo "$admin_response" | grep -q "dashboard\|admin"; then
+                ynh_print_info "Admin dashboard accessible - setup completed successfully"
+            else
+                ynh_print_info "Setup completed, login required to access admin"
+            fi
         fi
+        
+        # Clean up cookie jar
+        rm -f "$cookie_jar"
     else
         ynh_print_warn "Could not retrieve CSRF token for setup"
         ynh_print_warn "Please complete setup manually through the web interface."
