@@ -107,8 +107,27 @@ touch "/var/log/$app/$app.log"
 #=================================================
 ynh_script_progression "Configuring application..."
 
-# Create gunicorn configuration
-ynh_config_add --template="gunicorn.conf.py" --destination="$install_dir/gunicorn.conf.py"
+# Modify Wizarr's gunicorn configuration for YunoHost
+cat >> "$install_dir/gunicorn.conf.py" << EOF
+
+# YunoHost-specific gunicorn configuration
+import multiprocessing
+
+bind = "127.0.0.1:$port"
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = "sync"
+worker_connections = 1000
+max_requests = 1000
+max_requests_jitter = 50
+preload_app = True
+timeout = 30
+keepalive = 2
+# Use a simpler access log format to avoid Python formatting conflicts
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
+# Use the same log file as systemd for consistency
+accesslog = "/var/log/$app/$app.log"
+errorlog = "/var/log/$app/$app.log"
+EOF
 
 # Create environment file for Wizarr's environment variable usage
 cat > "$install_dir/.env" << EOF
