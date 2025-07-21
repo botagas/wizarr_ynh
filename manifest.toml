@@ -12,7 +12,6 @@ maintainers = ["botagas"]
 
 [upstream]
 license = "MIT"
-website = "https://github.com/Wizarrrr/wizarr"
 demo = "https://demo.wizarr.dev"
 admindoc = "https://docs.wizarr.dev"
 userdoc = "https://docs.wizarr.dev"
