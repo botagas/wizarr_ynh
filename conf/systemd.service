@@ -9,7 +9,7 @@ Group=__APP__
 WorkingDirectory=__INSTALL_DIR__
 Environment=PATH=__INSTALL_DIR__/.venv/bin:/usr/local/bin:$PATH
 Environment=PYTHONPATH=__INSTALL_DIR__
-ExecStart=__INSTALL_DIR__/.venv/bin/uv run gunicorn --config gunicorn.conf.py run:app
+ExecStart=__INSTALL_DIR__/.venv/bin/uv run gunicorn --config gunicorn.conf.py --bind 127.0.0.1:__PORT__ run:app
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=append:/var/log/__APP__/__APP__.log
 SyslogIdentifier=__APP__
