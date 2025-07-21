@@ -34,6 +34,7 @@ ProtectKernelTunables=yes
 LockPersonality=yes
 SystemCallArchitectures=native
 SystemCallFilter=~@clock @debug @module @mount @obsolete @reboot @setuid @swap @cpu-emulation @privileged
+ReadWritePaths=__INSTALL_DIR__ /var/log/__APP__
 
 ### Capability restrictions for enhanced security
 CapabilityBoundingSet=~CAP_RAWIO CAP_MKNOD
