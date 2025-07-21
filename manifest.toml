@@ -20,7 +20,7 @@ cpe = "cpe:2.3:a:wizarr:wizarr"
 
 # This is meant to be an URL where people can financially support this app, especially when its development is based
 # on volunteers and/or financed by its community. YunoHost may later advertise it in the webadmin.
-fund = "https://github.com/sponsors/Wizarrrr"
+fund = "https://github.com/sponsors/botagas"
 
 [integration]
 yunohost = ">= 12.0.9"
