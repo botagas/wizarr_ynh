@@ -100,7 +100,6 @@ ynh_script_progression "Creating application directories..."
 mkdir -p "$install_dir"/{database,logs,data}
 mkdir -p "$install_dir/database/sessions"
 mkdir -p "/var/log/$app"
-touch "/var/log/$app/$app.log"
 
 #=================================================
 # APP CONFIGURATION
@@ -179,6 +178,7 @@ yunohost service add "$app" --description="Wizarr media server invitation system
 
 # Use logrotate to manage application logfile(s)
 ynh_config_add_logrotate
+touch "/var/log/$app/$app.log"
 
 # Set proper permissions after database creation
 chown -R $app:$app "$install_dir"
