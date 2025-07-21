@@ -60,10 +60,10 @@ ynh_script_progression "Upgrading Python virtual environment..."
 pushd "$install_dir"
     # Upgrade virtual environment dependencies
     source .venv/bin/activate
-    pip install --upgrade pip uv
+    ynh_hide_warnings pip install --upgrade pip uv
     
     # Use UV to upgrade dependencies from pyproject.toml
-    uv sync --locked
+    ynh_hide_warnings uv sync --locked
     
     deactivate
 popd
@@ -75,8 +75,8 @@ ynh_script_progression "Building frontend assets..."
 
 pushd "$install_dir"
     # Install npm dependencies and build frontend
-    npm --prefix app/static/ install
-    npm --prefix app/static/ run build
+    ynh_hide_warnings npm --prefix app/static/ install
+    ynh_hide_warnings npm --prefix app/static/ run build
     
     # Fix internal API calls to use localhost instead of external domain
     # This prevents SSL certificate issues with self-signed certificates
@@ -85,7 +85,7 @@ pushd "$install_dir"
     
     # Compile translations using UV
     source .venv/bin/activate
-    uv run pybabel compile -d app/translations
+    ynh_hide_warnings uv run pybabel compile -d app/translations
     deactivate
 popd
 
@@ -98,7 +98,7 @@ pushd "$install_dir"
     source .venv/bin/activate
     
     # Run database migrations
-    uv run flask --app run:app db upgrade
+    ynh_hide_warnings uv run flask --app run:app db upgrade
     
     deactivate
 popd
@@ -151,7 +151,7 @@ INTERNAL_URL=http://127.0.0.1:$port
 DISABLE_BUILTIN_AUTH=false
 EOF
 
-chown "$app:$app" "$install_dir/.env" "$install_dir/gunicorn.conf.py"
+chown $app:$app "$install_dir/.env" "$install_dir/gunicorn.conf.py"
 
 #=================================================
 # REAPPLY SYSTEM CONFIGURATION
@@ -162,12 +162,12 @@ ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="Web-based media invitation system" --log="/var/log/$app/$app.log"
+yunohost service add "$app" --description="Wizarr media server invitation system" --log="/var/log/$app/$app.log"
 
 ynh_config_add_logrotate
 
-chown -R "$app:$app" "$install_dir"
-chown -R "$app:$app" "/var/log/$app"
+chown -R $app:$app "$install_dir"
+chown -R $app:$app "/var/log/$app"
 
 #=================================================
 # START SYSTEMD SERVICE

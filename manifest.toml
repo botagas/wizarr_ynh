@@ -5,7 +5,6 @@ packaging_format = 2
 id = "wizarr"
 name = "Wizarr"
 description.en = "Media server invitation system with custom wizard steps for Plex, Jellyfin, Emby and more"
-description.fr = "Système d'invitation pour serveurs multimédias avec des étapes d'assistant personnalisées pour Plex, Jellyfin, Emby et plus"
 
 version = "2025.7.5b~ynh1"
 
@@ -29,7 +28,7 @@ yunohost = ">= 12.0.9"
 helpers_version = "2.1"
 # Python 3.13 compilation requires modern architectures
 architectures = ["amd64", "arm64"]
-multi_instance = true
+multi_instance = false
 
 ldap = "not_relevant"
 

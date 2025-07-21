@@ -62,11 +62,11 @@ pushd "$install_dir"
     
     # Activate virtual environment and install UV
     source .venv/bin/activate
-    pip install --upgrade pip
-    pip install uv
+    ynh_hide_warnings pip install --upgrade pip
+    ynh_hide_warnings pip install uv
     
     # Use UV to install dependencies from pyproject.toml
-    uv sync --locked
+    ynh_hide_warnings uv sync --locked
     
     deactivate
 popd
@@ -78,8 +78,8 @@ ynh_script_progression "Building frontend assets..."
 
 pushd "$install_dir"
     # Install npm dependencies and build frontend
-    npm --prefix app/static/ install
-    npm --prefix app/static/ run build
+    ynh_hide_warnings npm --prefix app/static/ install
+    ynh_hide_warnings npm --prefix app/static/ run build
     
     # Fix internal API calls to use localhost instead of external domain
     # This prevents SSL certificate issues with self-signed certificates
@@ -88,7 +88,7 @@ pushd "$install_dir"
     
     # Compile translations using UV
     source .venv/bin/activate
-    uv run pybabel compile -d app/translations
+    ynh_hide_warnings uv run pybabel compile -d app/translations
     deactivate
 popd
 
@@ -159,7 +159,7 @@ pushd "$install_dir"
     source .venv/bin/activate
     
     # Initialize database with migrations
-    uv run flask --app run:app db upgrade
+    ynh_hide_warnings uv run flask --app run:app db upgrade
     
     deactivate
 popd
@@ -181,8 +181,8 @@ yunohost service add "$app" --description="Wizarr media server invitation system
 ynh_config_add_logrotate
 
 # Set proper permissions after database creation
-chown -R "$app:$app" "$install_dir"
-chown -R "$app:$app" "/var/log/$app"
+chown -R $app:$app "$install_dir"
+chown -R $app:$app "/var/log/$app"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
