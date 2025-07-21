@@ -42,10 +42,10 @@ ram.runtime = "200M"
     # this is a generic question - ask strings are automatically handled by YunoHost's core
     type = "domain"
 
-    [install.path]
+    # [install.path]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
-    type = "path"
-    default = "/"
+    # type = "path"
+    # default = "/"
 
     [install.init_main_permission]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
