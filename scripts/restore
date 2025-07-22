@@ -63,6 +63,7 @@ ynh_script_progression "Restoring various files..."
 
 chown -R "$app:$app" "$install_dir"
 chown -R "$app:$app" "/var/log/$app"
+chmod 750 "/var/log/$app"
 
 #=================================================
 # RELOAD NGINX AND PHP-FPM OR THE APP SERVICE

@@ -178,6 +178,7 @@ touch "/var/log/$app/$app.log"
 
 chown -R $app:$app "$install_dir"
 chown -R $app:$app "/var/log/$app"
+chmod 750 "/var/log/$app"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
