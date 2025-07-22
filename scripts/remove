@@ -20,15 +20,10 @@ ynh_config_remove_systemd
 
 ynh_config_remove_nginx
 
-# ynh_config_remove_logrotate
-
-# Remove Node.js
 ynh_nodejs_remove
 
-# Remove custom Python installation
 uninstall_python $py_version
 
-# Remove UV package manager
 uninstall_uv
 
 #=================================================

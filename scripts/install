@@ -13,7 +13,6 @@ secret_key=$(ynh_string_random)
 # Generate API key for Wizarr status endpoint
 api_key=$(ynh_string_random)
 
-# ynh_app_setting_set --app=$app --key=password --value="$password"
 ynh_app_setting_set --app=$app --key=secret_key --value="$secret_key"
 ynh_app_setting_set --app=$app --key=api_key --value="$api_key"
 ynh_app_setting_set --app=$app --key=admin_username --value="$admin_username"
@@ -32,7 +31,6 @@ check_python
 #=================================================
 ynh_script_progression "Installing UV package manager..."
 
-# Install UV using pipx (following immich_ynh approach)
 install_uv
 
 #=================================================
@@ -40,7 +38,6 @@ install_uv
 #=================================================
 ynh_script_progression "Installing Node.js..."
 
-# Install Node.js (required for frontend build)
 nodejs_version="22"
 ynh_nodejs_install
 
@@ -57,10 +54,8 @@ ynh_setup_source --dest_dir="$install_dir"
 ynh_script_progression "Setting up Python virtual environment..."
 
 pushd "$install_dir"
-    # Create virtual environment using Python 3.13
     /usr/local/bin/python$py_vshort -m venv --upgrade-deps .venv
     
-    # Activate virtual environment and install UV
     source .venv/bin/activate
     ynh_hide_warnings pip install --upgrade pip
     ynh_hide_warnings pip install uv
@@ -77,7 +72,6 @@ popd
 ynh_script_progression "Building frontend assets..."
 
 pushd "$install_dir"
-    # Install npm dependencies and build frontend
     ynh_hide_warnings npm --prefix app/static/ install
     ynh_hide_warnings npm --prefix app/static/ run build
     
@@ -105,7 +99,6 @@ mkdir -p "$install_dir/database/sessions"
 #=================================================
 ynh_script_progression "Configuring application..."
 
-# Modify Wizarr's gunicorn configuration for YunoHost
 cat >> "$install_dir/gunicorn.conf.py" << EOF
 
 # YunoHost-specific gunicorn configuration
@@ -167,28 +160,19 @@ popd
 #=================================================
 ynh_script_progression "Adding system configurations related to $app..."
 
-# Create a dedicated NGINX config using the conf/nginx.conf template
 ynh_config_add_nginx
 
-# Create a dedicated systemd config
 ynh_config_add_systemd
 
 yunohost service add "$app" --description="Wizarr media server invitation system" --log="systemd"
 
-# Use logrotate to manage application logfile(s)
-# ynh_config_add_logrotate
-# touch "/var/log/$app/$app.log"
-
-# Set proper permissions after database creation
 chown -R $app:$app "$install_dir"
-# chown -R $app:$app "/var/log/$app"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
 #=================================================
 ynh_script_progression "Starting $app service..."
 
-# Start the systemd service
 ynh_systemctl --service="$app" --action="start"
 
 # Wait for Wizarr to be fully ready
@@ -206,7 +190,6 @@ if [ $timeout -eq 0 ]; then
 else
     ynh_print_info "Wizarr is ready at https://$domain$path"
     
-    # Attempt automatic admin account creation
     ynh_script_progression "Creating admin account..."
     
     # Wait a bit more for Wizarr to be fully initialized
@@ -215,7 +198,7 @@ else
     # Create a temporary cookie jar for session management
     cookie_jar="/tmp/wizarr_cookies.txt"
     
-    # First, get the setup form and extract CSRF token while maintaining session
+    # Get the setup form and extract CSRF token while maintaining session
     setup_page=$(curl -s -c "$cookie_jar" "http://127.0.0.1:$port/setup/")
     csrf_token=$(echo "$setup_page" | grep 'csrf_token' | sed 's/.*value="\([^"]*\)".*/\1/')
     

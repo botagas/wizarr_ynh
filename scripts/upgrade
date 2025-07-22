@@ -40,7 +40,6 @@ if ! command -v uv &>/dev/null; then
     cp "$HOME/.cargo/bin/uv" "/usr/local/bin/uv"
 fi
 
-# Install Node.js
 nodejs_version="22"
 ynh_nodejs_install
 
@@ -49,7 +48,6 @@ ynh_nodejs_install
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-# Download, check integrity, uncompress and patch the source from manifest.toml
 ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env database logs data .venv"
 
 #=================================================
@@ -58,7 +56,6 @@ ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env database 
 ynh_script_progression "Upgrading Python virtual environment..."
 
 pushd "$install_dir"
-    # Upgrade virtual environment dependencies
     source .venv/bin/activate
     ynh_hide_warnings pip install --upgrade pip uv
     
@@ -74,7 +71,6 @@ popd
 ynh_script_progression "Building frontend assets..."
 
 pushd "$install_dir"
-    # Install npm dependencies and build frontend
     ynh_hide_warnings npm --prefix app/static/ install
     ynh_hide_warnings npm --prefix app/static/ run build
     
@@ -108,7 +104,6 @@ popd
 #=================================================
 ynh_script_progression "Updating $app's configuration files..."
 
-# Modify Wizarr's gunicorn configuration for YunoHost
 cat >> "$install_dir/gunicorn.conf.py" << EOF
 
 # YunoHost-specific gunicorn configuration
