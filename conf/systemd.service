@@ -16,7 +16,7 @@ SyslogIdentifier=__APP__
 Restart=always
 RestartSec=10
 
-### Security and sandboxing options to harden the service
+# Sandboxing options
 NoNewPrivileges=yes
 PrivateTmp=yes
 PrivateDevices=yes
@@ -25,15 +25,9 @@ RestrictNamespaces=yes
 RestrictRealtime=yes
 DevicePolicy=closed
 ProtectClock=yes
-ProtectHostname=yes
-ProtectProc=invisible
-ProtectSystem=strict
 ProtectControlGroups=yes
-ProtectKernelModules=yes
-ProtectKernelTunables=yes
-LockPersonality=yes
-SystemCallArchitectures=native
-SystemCallFilter=~@clock @debug @module @mount @obsolete @reboot @setuid @swap @cpu-emulation @privileged
+ProtectSystem=strict
+ProtectHome=yes
 ReadWritePaths=__INSTALL_DIR__ /var/log/__APP__
 
 ### Capability restrictions for enhanced security
