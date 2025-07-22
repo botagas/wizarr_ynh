@@ -10,8 +10,8 @@ WorkingDirectory=__INSTALL_DIR__
 Environment=PATH=__INSTALL_DIR__/.venv/bin:/usr/local/bin:$PATH
 Environment=PYTHONPATH=__INSTALL_DIR__
 ExecStart=__INSTALL_DIR__/.venv/bin/uv run gunicorn --config gunicorn.conf.py run:app
-StandardOutput=journal
-StandardError=journal
+StandardOutput=append:/var/log/__APP__/__APP__.log
+StandardError=append:/var/log/__APP__/__APP__.log
 SyslogIdentifier=__APP__
 Restart=always
 RestartSec=10
@@ -28,7 +28,7 @@ ProtectClock=yes
 ProtectControlGroups=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=__INSTALL_DIR__
+ReadWritePaths=__INSTALL_DIR__ /var/log/__APP__
 
 ### Capability restrictions for enhanced security
 CapabilityBoundingSet=~CAP_RAWIO CAP_MKNOD

@@ -27,9 +27,8 @@ ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 ynh_backup "/etc/systemd/system/$app.service"
 
 # Backup the logrotate configuration
-# ynh_backup "/etc/logrotate.d/$app"
-# Note: Log files are not backed up as they will be recreated on restore
-
+ynh_backup "/etc/logrotate.d/$app"
+ynh_backup "/var/log/$app/"
 
 # Backup Python installation (if it's our custom version)
 if [ -f "/usr/local/bin/python$py_vshort" ]; then
