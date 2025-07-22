@@ -125,9 +125,9 @@ timeout = 30
 keepalive = 2
 # Use a simpler access log format to avoid Python formatting conflicts
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
-# Use the same log file as systemd for consistency
-accesslog = "/var/log/$app/$app.log"
-errorlog = "/var/log/$app/$app.log"
+# Use systemd journal for logging instead of files
+accesslog = "-"
+errorlog = "-"
 EOF
 
 # Update environment file for Wizarr's environment variable usage
@@ -162,7 +162,7 @@ ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="Wizarr media server invitation system" --log="/var/log/$app/$app.log"
+yunohost service add "$app" --description="Wizarr media server invitation system" --log="systemd"
 
 ynh_config_add_logrotate
 

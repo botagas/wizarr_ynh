@@ -99,7 +99,6 @@ ynh_script_progression "Creating application directories..."
 
 mkdir -p "$install_dir"/{database,logs,data}
 mkdir -p "$install_dir/database/sessions"
-mkdir -p "/var/log/$app"
 
 #=================================================
 # APP CONFIGURATION
@@ -123,9 +122,9 @@ timeout = 30
 keepalive = 2
 # Use a simpler access log format to avoid Python formatting conflicts
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
-# Use the same log file as systemd for consistency
-accesslog = "/var/log/$app/$app.log"
-errorlog = "/var/log/$app/$app.log"
+# Use systemd journal for logging instead of files
+accesslog = "-"
+errorlog = "-"
 EOF
 
 # Create environment file for Wizarr's environment variable usage
@@ -174,15 +173,15 @@ ynh_config_add_nginx
 # Create a dedicated systemd config
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="Wizarr media server invitation system" --log="/var/log/$app/$app.log"
+yunohost service add "$app" --description="Wizarr media server invitation system" --log="systemd"
 
 # Use logrotate to manage application logfile(s)
-ynh_config_add_logrotate
-touch "/var/log/$app/$app.log"
+# ynh_config_add_logrotate
+# touch "/var/log/$app/$app.log"
 
 # Set proper permissions after database creation
 chown -R $app:$app "$install_dir"
-chown -R $app:$app "/var/log/$app"
+# chown -R $app:$app "/var/log/$app"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
