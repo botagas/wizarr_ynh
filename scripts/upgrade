@@ -49,7 +49,6 @@ ynh_nodejs_install
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-# Download, check integrity, uncompress and patch the source from manifest.toml
 ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env database logs data .venv"
 
 #=================================================

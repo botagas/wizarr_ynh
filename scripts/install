@@ -167,19 +167,15 @@ popd
 #=================================================
 ynh_script_progression "Adding system configurations related to $app..."
 
-# Create a dedicated NGINX config using the conf/nginx.conf template
 ynh_config_add_nginx
 
-# Create a dedicated systemd config
 ynh_config_add_systemd
 
 yunohost service add "$app" --description="Wizarr media server invitation system" --log="/var/log/$app/$app.log"
 
-# Use logrotate to manage application logfile(s)
 ynh_config_add_logrotate
 touch "/var/log/$app/$app.log"
 
-# Set proper permissions after database creation
 chown -R $app:$app "$install_dir"
 chown -R $app:$app "/var/log/$app"
 
@@ -206,7 +202,6 @@ if [ $timeout -eq 0 ]; then
 else
     ynh_print_info "Wizarr is ready at https://$domain$path"
     
-    # Attempt automatic admin account creation
     ynh_script_progression "Creating admin account..."
     
     # Wait a bit more for Wizarr to be fully initialized
@@ -215,7 +210,7 @@ else
     # Create a temporary cookie jar for session management
     cookie_jar="/tmp/wizarr_cookies.txt"
     
-    # First, get the setup form and extract CSRF token while maintaining session
+    # Get the setup form and extract CSRF token while maintaining session
     setup_page=$(curl -s -c "$cookie_jar" "http://127.0.0.1:$port/setup/")
     csrf_token=$(echo "$setup_page" | grep 'csrf_token' | sed 's/.*value="\([^"]*\)".*/\1/')
     
