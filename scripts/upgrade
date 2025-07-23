@@ -121,8 +121,8 @@ keepalive = 2
 # Use a simpler access log format to avoid Python formatting conflicts
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 # Use systemd journal for logging instead of files
-accesslog = "-"
-errorlog = "-"
+accesslog = "/var/log/$app/$app.log"
+errorlog = "/var/log/$app/$app.log"
 EOF
 
 # Update environment file for Wizarr's environment variable usage
