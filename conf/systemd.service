@@ -28,7 +28,7 @@ ProtectClock=yes
 ProtectControlGroups=yes
 ProtectSystem=strict
 ProtectHome=yes
-ReadWritePaths=__INSTALL_DIR__
+ReadWritePaths=__INSTALL_DIR__ /var/log/__APP__
 
 ### Capability restrictions for enhanced security
 CapabilityBoundingSet=~CAP_RAWIO CAP_MKNOD
