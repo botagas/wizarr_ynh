@@ -19,6 +19,6 @@ Your Wizarr instance is now ready at: **<https://__DOMAIN____PATH__>**
 
 - 📚 **Documentation**: https://docs.wizarr.dev
 - 🐛 **Issues**: https://github.com/YunoHost-Apps/wizarr_ynh/issues
-- 💬 **Discord**: https://discord.com/invite/mQbyEhWm
+- 💬 **Wizarr Discord**: https://discord.com/invite/mQbyEhWm
 
 Enjoy using Wizarr to easily manage media server invitations!
