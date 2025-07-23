@@ -40,7 +40,6 @@ if ! command -v uv &>/dev/null; then
     cp "$HOME/.cargo/bin/uv" "/usr/local/bin/uv"
 fi
 
-# Install Node.js
 nodejs_version="22"
 ynh_nodejs_install
 
@@ -49,7 +48,6 @@ ynh_nodejs_install
 #=================================================
 ynh_script_progression "Upgrading source files..."
 
-# Download, check integrity, uncompress and patch the source from manifest.toml
 ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env database logs data .venv"
 
 #=================================================
@@ -58,12 +56,11 @@ ynh_setup_source --dest_dir="$install_dir" --full_replace --keep=".env database 
 ynh_script_progression "Upgrading Python virtual environment..."
 
 pushd "$install_dir"
-    # Upgrade virtual environment dependencies
     source .venv/bin/activate
-    pip install --upgrade pip uv
+    ynh_hide_warnings pip install --upgrade pip uv
     
     # Use UV to upgrade dependencies from pyproject.toml
-    uv sync --locked
+    ynh_hide_warnings uv sync --locked
     
     deactivate
 popd
@@ -74,9 +71,8 @@ popd
 ynh_script_progression "Building frontend assets..."
 
 pushd "$install_dir"
-    # Install npm dependencies and build frontend
-    npm --prefix app/static/ install
-    npm --prefix app/static/ run build
+    ynh_hide_warnings npm --prefix app/static/ install
+    ynh_hide_warnings npm --prefix app/static/ run build
     
     # Fix internal API calls to use localhost instead of external domain
     # This prevents SSL certificate issues with self-signed certificates
@@ -85,7 +81,7 @@ pushd "$install_dir"
     
     # Compile translations using UV
     source .venv/bin/activate
-    uv run pybabel compile -d app/translations
+    ynh_hide_warnings uv run pybabel compile -d app/translations
     deactivate
 popd
 
@@ -98,7 +94,7 @@ pushd "$install_dir"
     source .venv/bin/activate
     
     # Run database migrations
-    uv run flask --app run:app db upgrade
+    ynh_hide_warnings uv run flask --app run:app db upgrade
     
     deactivate
 popd
@@ -108,8 +104,26 @@ popd
 #=================================================
 ynh_script_progression "Updating $app's configuration files..."
 
-# Update gunicorn configuration
-ynh_config_add --template="gunicorn.conf.py" --destination="$install_dir/gunicorn.conf.py"
+cat >> "$install_dir/gunicorn.conf.py" << EOF
+
+# YunoHost-specific gunicorn configuration
+import multiprocessing
+
+bind = "127.0.0.1:$port"
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = "sync"
+worker_connections = 1000
+max_requests = 1000
+max_requests_jitter = 50
+preload_app = True
+timeout = 30
+keepalive = 2
+# Use a simpler access log format to avoid Python formatting conflicts
+access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
+# Use systemd journal for logging instead of files
+accesslog = "/var/log/$app/$app.log"
+errorlog = "/var/log/$app/$app.log"
+EOF
 
 # Update environment file for Wizarr's environment variable usage
 cat > "$install_dir/.env" << EOF
@@ -132,7 +146,7 @@ INTERNAL_URL=http://127.0.0.1:$port
 DISABLE_BUILTIN_AUTH=false
 EOF
 
-chown "$app:$app" "$install_dir/.env" "$install_dir/gunicorn.conf.py"
+chown $app:$app "$install_dir/.env" "$install_dir/gunicorn.conf.py"
 
 #=================================================
 # REAPPLY SYSTEM CONFIGURATION
@@ -143,12 +157,13 @@ ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-yunohost service add "$app" --description="Web-based media invitation system" --log="/var/log/$app/$app.log"
+yunohost service add "$app" --description="Wizarr media server invitation system" --log="/var/log/$app/$app.log"
 
 ynh_config_add_logrotate
 
-chown -R "$app:$app" "$install_dir"
-chown -R "$app:$app" "/var/log/$app"
+chown -R $app:$app "$install_dir"
+chown -R $app:$app "/var/log/$app"
+chmod 750 "/var/log/$app"
 
 #=================================================
 # START SYSTEMD SERVICE

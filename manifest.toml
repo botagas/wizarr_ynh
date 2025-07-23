@@ -5,7 +5,6 @@ packaging_format = 2
 id = "wizarr"
 name = "Wizarr"
 description.en = "Media server invitation system with custom wizard steps for Plex, Jellyfin, Emby and more"
-description.fr = "Système d'invitation pour serveurs multimédias avec des étapes d'assistant personnalisées pour Plex, Jellyfin, Emby et plus"
 
 version = "2025.7.5b~ynh1"
 
@@ -13,7 +12,6 @@ maintainers = ["botagas"]
 
 [upstream]
 license = "MIT"
-website = "https://github.com/Wizarrrr/wizarr"
 demo = "https://demo.wizarr.dev"
 admindoc = "https://docs.wizarr.dev"
 userdoc = "https://docs.wizarr.dev"
@@ -22,14 +20,14 @@ cpe = "cpe:2.3:a:wizarr:wizarr"
 
 # This is meant to be an URL where people can financially support this app, especially when its development is based
 # on volunteers and/or financed by its community. YunoHost may later advertise it in the webadmin.
-fund = "https://github.com/sponsors/Wizarrrr"
+fund = "https://github.com/sponsors/botagas"
 
 [integration]
 yunohost = ">= 12.0.9"
 helpers_version = "2.1"
 # Python 3.13 compilation requires modern architectures
 architectures = ["amd64", "arm64"]
-multi_instance = true
+multi_instance = false
 
 ldap = "not_relevant"
 
@@ -44,10 +42,10 @@ ram.runtime = "200M"
     # this is a generic question - ask strings are automatically handled by YunoHost's core
     type = "domain"
 
-    [install.path]
+    # [install.path]
     # this is a generic question - ask strings are automatically handled by YunoHost's core
-    type = "path"
-    default = "/"
+    # type = "path"
+    # default = "/"
 
     [install.init_main_permission]
     # this is a generic question - ask strings are automatically handled by YunoHost's core

@@ -9,7 +9,7 @@ Group=__APP__
 WorkingDirectory=__INSTALL_DIR__
 Environment=PATH=__INSTALL_DIR__/.venv/bin:/usr/local/bin:$PATH
 Environment=PYTHONPATH=__INSTALL_DIR__
-ExecStart=__INSTALL_DIR__/.venv/bin/uv run gunicorn --config gunicorn.conf.py --preload --workers 4 --bind 127.0.0.1:__PORT__ --umask 007 run:app
+ExecStart=__INSTALL_DIR__/.venv/bin/uv run gunicorn --config gunicorn.conf.py run:app
 StandardOutput=append:/var/log/__APP__/__APP__.log
 StandardError=append:/var/log/__APP__/__APP__.log
 SyslogIdentifier=__APP__
@@ -29,6 +29,17 @@ ProtectControlGroups=yes
 ProtectSystem=strict
 ProtectHome=yes
 ReadWritePaths=__INSTALL_DIR__ /var/log/__APP__
+
+### Capability restrictions for enhanced security
+CapabilityBoundingSet=~CAP_RAWIO CAP_MKNOD
+CapabilityBoundingSet=~CAP_AUDIT_CONTROL CAP_AUDIT_READ CAP_AUDIT_WRITE
+CapabilityBoundingSet=~CAP_SYS_BOOT CAP_SYS_TIME CAP_SYS_MODULE CAP_SYS_PACCT
+CapabilityBoundingSet=~CAP_LEASE CAP_LINUX_IMMUTABLE CAP_IPC_LOCK
+CapabilityBoundingSet=~CAP_BLOCK_SUSPEND CAP_WAKE_ALARM
+CapabilityBoundingSet=~CAP_SYS_TTY_CONFIG
+CapabilityBoundingSet=~CAP_MAC_ADMIN CAP_MAC_OVERRIDE
+CapabilityBoundingSet=~CAP_NET_ADMIN CAP_NET_BROADCAST CAP_NET_RAW
+CapabilityBoundingSet=~CAP_SYS_ADMIN CAP_SYS_PTRACE CAP_SYSLOG
 
 [Install]
 WantedBy=multi-user.target
