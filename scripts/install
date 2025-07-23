@@ -164,9 +164,14 @@ ynh_config_add_nginx
 
 ynh_config_add_systemd
 
+ynh_config_add_logrotate
+touch "/var/log/$app/$app.log"
+
 yunohost service add "$app" --description="Wizarr media server invitation system" --log="systemd"
 
 chown -R $app:$app "$install_dir"
+chown -R $app:$app "/var/log/$app"
+chmod 750 "/var/log/$app"
 
 #=================================================
 # SETUP APPLICATION WITH CURL
