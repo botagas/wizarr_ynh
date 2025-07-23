@@ -157,9 +157,9 @@ ynh_config_add_nginx
 
 ynh_config_add_systemd
 
-ynh_config_add_logrotate
+yunohost service add "$app" --description="Wizarr media server invitation system" --log="/var/log/$app/$app.log"
 
-yunohost service add "$app" --description="Wizarr media server invitation system" --log="systemd"
+ynh_config_add_logrotate
 
 chown -R $app:$app "$install_dir"
 chown -R $app:$app "/var/log/$app"
